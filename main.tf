@@ -1,31 +1,37 @@
-# This element I think sets various configuration options for terraform itself.
+# Configure Terraform itself:
 terraform {
-    required_providers {
-        docker = {
-            source = "kreuzwerker/docker"
-            version = ">= 2.13.0"
-        }
+  required_providers {
+    azurerm = {
+      source = "hashicorp/azurerm"
+          # The above is supposedly shorthand for:
+          # registry.terraform.io/hashicorp/azurerm
+      version = "~> 3.0.2"
     }
+  }
+  required_version = ">= 1.1.0"
 }
 
-provider "docker" {
-    host = "npipe:////.//pipe//docker_engine"
+# Configure azure provider plugin (this one is empty for now):
+provider "azurerm" {
+  features {}
 }
 
-resource "docker_image" "nginx" {
-    name  = "nginx:latest"
-    keep_locally = false
+resource "azurerm_resource_group" "rg" {
+  name     = "myTFResourceGroup"
+  location = "eastus2"
+  tags = {
+    Environment = "Terraform Getting Started"
+    Team = "DevOps"
+  }
 }
 
-resource "docker_container" "nginx" {
-    image = docker_image.nginx.latest
-    name = "tutorial"
-    ports {
-        internal = 80
-        external = 8000
-    }
+resource "azurerm_virtual_network" "vnet" {
+    name = "myTFVnet"
+    address_space = ["10.0.0.0/16"]
+        # Indicates the address range:
+        # 10.0.0.0 - 10.0.255.255
+        # The first and last address are for base and broadcast though.
+    location      = "eastus2"
+    resource_group_name = azurerm_resource_group.rg.name
 }
-
-
-
 
